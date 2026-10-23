@@ -124,6 +124,16 @@ The first build compiles CommonLibSSE-NG (about 15 minutes); later builds take s
 - **NPC detection covers characters loaded near the player** (the engine's high-process actor list).
 - Tested on Skyrim 1.6.1170. Skyrim 1.7.x should work through Address Library but is not yet verified.
 
+## License
+
+A.N.D. Awareness is free software, licensed under the
+[GNU General Public License v3.0 or later](LICENSE). You may use, modify and share it; if you distribute a
+modified version, it must stay under the GPL and come with its source.
+
+The DLL statically links CommonLibSSE-NG, which is itself GPL-3.0-or-later (with a modding exception), so
+the GPL applies to the plugin as a whole. Third-party components and their licenses are listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## Credits
 
 - **Advanced Nudity Detection** and its keyword/faction design, by its author.

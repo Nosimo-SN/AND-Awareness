@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 cmake_minimum_required(VERSION 3.21)
 project(AND_Awareness VERSION 1.0.0 LANGUAGES CXX)
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Nosimo-SN. Part of A.N.D. Awareness: https://github.com/Nosimo-SN/AND-Awareness
 #pragma once
 
 #include <RE/Skyrim.h>

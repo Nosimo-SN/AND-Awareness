@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Nosimo-SN. Part of A.N.D. Awareness: https://github.com/Nosimo-SN/AND-Awareness
+
 // A.N.D. Awareness: watches A.N.D.'s AND_Flashing* factions on the player and nearby (high-process) NPCs.
 //  - Every change raises the SKSE mod event "SN_ANDFlash" (strArg = flash type, numArg = 1 start / 0 end,
 //    sender = the actor) for any mod or trigger that wants it.
