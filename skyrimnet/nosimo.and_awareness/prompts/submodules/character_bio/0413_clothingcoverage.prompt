@@ -1,0 +1,344 @@
+{# 0413 - Clothing Coverage: A.N.D. exposure, revealing garments, flashing causes, garment quality #}
+{% if render_mode in ["full", "thoughts", "transform", "dialogue_target"] %}
+{# Reads A.N.D. exposure + flashing factions and A.N.D. keywords on worn items.
+   - Exposure comes ONLY from A.N.D.'s exposure factions; keywords never infer it.
+   - Revealing garments: A.N.D. "T" keywords (T_Low / T / T_High) are sheer; "_NoCover" keywords cover
+     nothing. "_Male" variants are read for male actors, the plain set for female, as A.N.D. does.
+   - Flashing: A.N.D. rolls curtains and sheer items as "not covering right now" (a logical state, not
+     a visual one), so flash wording states coverage, never movement.
+   - Per layer the least revealing keyword or garment wins ("modesty overrules skimpy"; verified in game:
+     AND_Underwear + AND_Underwear_NoCover still covers). Layers are settled after all of an item's
+     keywords are read, so keyword and item order never matter.
+   - ClothingRich / ClothingPoor tally supplies a neutral classification: rich only, poor only, mixed, or omitted when untagged.
+   Faction ranks: 0 inactive, 1 active. Modesty is out of scope here.
+   Inja notes: no list literals from variables, no index assignment; parallel lists + at() instead.
+#}
+{% set cc_actor = decnpc(actorUUID) %}
+{% set cc_poss = cc_actor.possessiveAdjective %}
+{% set cc_is_male = cc_actor.gender == "Male" %}
+{% if cc_is_male %}
+    {% set cc_term_chest = "chest" %}
+    {% set cc_term_bra = "chest wrap" %}
+{% else %}
+    {% set cc_term_chest = "breasts" %}
+    {% set cc_term_bra = "breastband" %}
+{% endif %}
+
+{# --- A.N.D. exposure factions --- #}
+{% set cc_nude = get_faction_rank(actorUUID, "AND_NudeActorFaction") == 1 %}
+{% set cc_topless = get_faction_rank(actorUUID, "AND_ToplessFaction") == 1 %}
+{% set cc_bottomless = get_faction_rank(actorUUID, "AND_BottomlessFaction") == 1 %}
+{% set cc_show_chest = get_faction_rank(actorUUID, "AND_ShowingChestFaction") == 1 %}
+{% set cc_show_bra = get_faction_rank(actorUUID, "AND_ShowingBraFaction") == 1 %}
+{% set cc_show_genitals = get_faction_rank(actorUUID, "AND_ShowingGenitalsFaction") == 1 %}
+{% set cc_show_ass = get_faction_rank(actorUUID, "AND_ShowingAssFaction") == 1 %}
+{% set cc_show_under = get_faction_rank(actorUUID, "AND_ShowingUnderwearFaction") == 1 %}
+{% set cc_exposed = cc_nude or cc_topless or cc_bottomless or cc_show_chest or cc_show_bra or cc_show_genitals or cc_show_ass or cc_show_under %}
+
+{# --- A.N.D. flashing factions --- #}
+{% set cc_f_chestc = get_faction_rank(actorUUID, "AND_FlashingChestCurtain") == 1 %}
+{% set cc_f_pelvicc = get_faction_rank(actorUUID, "AND_FlashingPelvicCurtain") == 1 %}
+{% set cc_f_assc = get_faction_rank(actorUUID, "AND_FlashingAssCurtain") == 1 %}
+{% set cc_f_top = get_faction_rank(actorUUID, "AND_FlashingTop") == 1 %}
+{% set cc_f_bra = get_faction_rank(actorUUID, "AND_FlashingBra") == 1 %}
+{% set cc_f_bottom = get_faction_rank(actorUUID, "AND_FlashingBottom") == 1 %}
+{% set cc_f_under = get_faction_rank(actorUUID, "AND_FlashingUnderwear") == 1 %}
+{% set cc_f_hotpants = get_faction_rank(actorUUID, "AND_FlashingHotpants") == 1 %}
+{% set cc_f_cstring = get_faction_rank(actorUUID, "AND_FlashingCString") == 1 %}
+{% set cc_f_skirt = get_faction_rank(actorUUID, "AND_FlashingSkirt") == 1 %}
+
+{# --- A.N.D. keyword families per layer (female spellings; "_Male" is stripped before matching).
+     Exact matches only. FlashRisk, CoversAll, NearlyNaked, EffectivelyNaked, Microskirt, pasties and
+     Ignore belong to no family: A.N.D. folds their effect into the exposure factions already. --- #}
+{% set cc_k_chestc = ["AND_ChestCurtain", "AND_ChestCurtainT"] %}
+{% set cc_k_top = ["AND_ArmorTop", "AND_ArmorTopT_Low", "AND_ArmorTopT", "AND_ArmorTopT_High", "AND_ArmorTop_NoCover"] %}
+{% set cc_k_bra = ["AND_Bra", "AND_BraT_Low", "AND_BraT", "AND_BraT_High", "AND_Bra_NoCover"] %}
+{% set cc_k_bottom = ["AND_ArmorBottom", "AND_ArmorBottomT_Low", "AND_ArmorBottomT", "AND_ArmorBottomT_High", "AND_ArmorBottom_NoCover"] %}
+{% set cc_k_hotpants = ["AND_Hotpants", "AND_HotpantsT_Low", "AND_HotpantsT", "AND_HotpantsT_High"] %}
+{% set cc_k_skirt = ["AND_ShowgirlSkirt", "AND_ShowgirlSkirtT_Low", "AND_ShowgirlSkirtT", "AND_ShowgirlSkirtT_High", "AND_HimboSkirt", "AND_HimboSkirtT_Low", "AND_HimboSkirtT", "AND_HimboSkirtT_High"] %}
+{% set cc_k_pelvicc = ["AND_PelvicCurtain", "AND_PelvicCurtainT"] %}
+{% set cc_k_assc = ["AND_AssCurtain", "AND_AssCurtainT"] %}
+{% set cc_k_mini = ["AND_Miniskirt", "AND_MiniskirtT"] %}
+{% set cc_k_under = ["AND_Underwear", "AND_UnderwearT_Low", "AND_UnderwearT", "AND_UnderwearT_High", "AND_Underwear_NoCover", "AND_Thong", "AND_ThongT_Low", "AND_ThongT", "AND_ThongT_High", "AND_Thong_NoCover", "AND_BananaHammock", "AND_BananaHammockT_Low", "AND_BananaHammockT", "AND_BananaHammockT_High"] %}
+{% set cc_k_thong = ["AND_Thong", "AND_ThongT_Low", "AND_ThongT", "AND_ThongT_High", "AND_Thong_NoCover", "AND_BananaHammock", "AND_BananaHammockT_Low", "AND_BananaHammockT", "AND_BananaHammockT_High"] %}
+{% set cc_k_cstring = ["AND_CString", "AND_CStringT_Low", "AND_CStringT", "AND_CStringT_High"] %}
+{% set cc_sheer_kws = ["AND_ChestCurtainT", "AND_AssCurtainT", "AND_PelvicCurtainT", "AND_MiniskirtT", "AND_ArmorTopT_Low", "AND_ArmorTopT", "AND_ArmorTopT_High", "AND_BraT_Low", "AND_BraT", "AND_BraT_High", "AND_ArmorBottomT_Low", "AND_ArmorBottomT", "AND_ArmorBottomT_High", "AND_HotpantsT_Low", "AND_HotpantsT", "AND_HotpantsT_High", "AND_ShowgirlSkirtT_Low", "AND_ShowgirlSkirtT", "AND_ShowgirlSkirtT_High", "AND_HimboSkirtT_Low", "AND_HimboSkirtT", "AND_HimboSkirtT_High", "AND_UnderwearT_Low", "AND_UnderwearT", "AND_UnderwearT_High", "AND_ThongT_Low", "AND_ThongT", "AND_ThongT_High", "AND_CStringT_Low", "AND_CStringT", "AND_CStringT_High", "AND_BananaHammockT_Low", "AND_BananaHammockT", "AND_BananaHammockT_High"] %}
+{% set cc_nocover_kws = ["AND_ArmorTop_NoCover", "AND_Bra_NoCover", "AND_ArmorBottom_NoCover", "AND_Underwear_NoCover", "AND_Thong_NoCover"] %}
+
+{# --- Per-layer slots: garment name, reveal rank (-1 none worn, 0 opaque, 1 faintly sheer, 2 sheer,
+     3 nearly see-through, 4 covers nothing), quality ("" / rich / poor). --- #}
+{% set cc_chestc = "" %}{% set cc_chestc_r = -1 %}{% set cc_chestc_q = "" %}
+{% set cc_top = "" %}{% set cc_top_r = -1 %}{% set cc_top_q = "" %}
+{% set cc_bra = "" %}{% set cc_bra_r = -1 %}{% set cc_bra_q = "" %}
+{% set cc_bottom = "" %}{% set cc_bottom_r = -1 %}{% set cc_bottom_q = "" %}
+{% set cc_hotpants = "" %}{% set cc_hotpants_r = -1 %}{% set cc_hotpants_q = "" %}
+{% set cc_skirt = "" %}{% set cc_skirt_r = -1 %}{% set cc_skirt_q = "" %}
+{% set cc_pelvicc = "" %}{% set cc_pelvicc_r = -1 %}{% set cc_pelvicc_q = "" %}
+{% set cc_assc = "" %}{% set cc_assc_r = -1 %}{% set cc_assc_q = "" %}
+{% set cc_under = "" %}{% set cc_under_r = -1 %}{% set cc_under_q = "" %}{% set cc_under_thong = false %}
+{% set cc_cstring = "" %}{% set cc_cstring_r = -1 %}{% set cc_cstring_q = "" %}
+
+{% set cc_rich = 0 %}
+{% set cc_poor = 0 %}
+{% set cc_seen = [] %}
+{% set cc_rev_names = [] %}
+{% set cc_rev_ranks = [] %}
+{% set cc_rev_qs = [] %}
+
+{# --- Scan worn items, each once (one item can fill several equipment slots) --- #}
+{% for slot, item in get_worn_equipment(actorUUID) %}
+    {% if is_item_enabled(item.formID) and not (item.formID in cc_seen) %}
+        {% set cc_seen = append(cc_seen, item.formID) %}
+        {# The wearer-specific name is empty unless the item was renamed; fall back as base 0410 does #}
+        {% set cc_name = get_item_name_for_wearer(item.formID, actorUUID) %}
+        {% if length(cc_name) == 0 %}
+            {% set cc_name = get_item_name(item.formID) %}
+        {% endif %}
+        {% if length(cc_name) == 0 %}
+            {% set cc_name = "unnamed garment" %}
+        {% endif %}
+
+        {# Pass 1: garment quality #}
+        {% set cc_is_rich = false %}
+        {% set cc_is_poor = false %}
+        {% for kw in item.keywords %}
+            {% if kw.editorID == "ClothingRich" %}
+                {% set cc_is_rich = true %}
+            {% else if kw.editorID == "ClothingPoor" %}
+                {% set cc_is_poor = true %}
+            {% endif %}
+        {% endfor %}
+        {% set cc_q = "" %}
+        {% if cc_is_rich and not cc_is_poor %}
+            {% set cc_q = "rich" %}
+            {% set cc_rich = cc_rich + 1 %}
+        {% else if cc_is_poor and not cc_is_rich %}
+            {% set cc_q = "poor" %}
+            {% set cc_poor = cc_poor + 1 %}
+        {% endif %}
+
+        {# Pass 2: this item's A.N.D. layers, keeping the least revealing keyword per layer (opaque 0 < sheer 1-3 < NoCover 4) #}
+        {% set cc_i_chestc = -1 %}{% set cc_i_top = -1 %}{% set cc_i_bra = -1 %}{% set cc_i_bottom = -1 %}{% set cc_i_hotpants = -1 %}
+        {% set cc_i_skirt = -1 %}{% set cc_i_pelvicc = -1 %}{% set cc_i_assc = -1 %}{% set cc_i_under = -1 %}{% set cc_i_cstring = -1 %}
+        {% set cc_i_thong = false %}
+        {% for kw in item.keywords %}
+            {# HimboSkirt and BananaHammock are male-only and carry no _Male suffix #}
+            {% set cc_kw_male = contains(kw.editorID, "_Male") or contains(kw.editorID, "AND_HimboSkirt") or contains(kw.editorID, "AND_BananaHammock") %}
+            {% set cc_kw = replace(kw.editorID, "_Male", "") %}
+            {% if cc_kw_male == cc_is_male %}
+                {% set cc_r = 0 %}
+                {% if cc_kw in cc_nocover_kws %}
+                    {% set cc_r = 4 %}
+                {% else if cc_kw in cc_sheer_kws %}
+                    {% if contains(cc_kw, "_Low") %}
+                        {% set cc_r = 1 %}
+                    {% else if contains(cc_kw, "_High") %}
+                        {% set cc_r = 3 %}
+                    {% else %}
+                        {% set cc_r = 2 %}
+                    {% endif %}
+                {% endif %}
+                {% if cc_kw in cc_k_chestc %}
+                    {% if cc_i_chestc < 0 or cc_r < cc_i_chestc %}{% set cc_i_chestc = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_top %}
+                    {% if cc_i_top < 0 or cc_r < cc_i_top %}{% set cc_i_top = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_bra %}
+                    {% if cc_i_bra < 0 or cc_r < cc_i_bra %}{% set cc_i_bra = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_bottom %}
+                    {% if cc_i_bottom < 0 or cc_r < cc_i_bottom %}{% set cc_i_bottom = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_hotpants %}
+                    {% if cc_i_hotpants < 0 or cc_r < cc_i_hotpants %}{% set cc_i_hotpants = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_skirt %}
+                    {% if cc_i_skirt < 0 or cc_r < cc_i_skirt %}{% set cc_i_skirt = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_pelvicc %}
+                    {% if cc_i_pelvicc < 0 or cc_r < cc_i_pelvicc %}{% set cc_i_pelvicc = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_assc %}
+                    {% if cc_i_assc < 0 or cc_r < cc_i_assc %}{% set cc_i_assc = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_mini %}
+                    {% if cc_i_pelvicc < 0 or cc_r < cc_i_pelvicc %}{% set cc_i_pelvicc = cc_r %}{% endif %}
+                    {% if cc_i_assc < 0 or cc_r < cc_i_assc %}{% set cc_i_assc = cc_r %}{% endif %}
+                {% else if cc_kw in cc_k_under %}
+                    {% if cc_i_under < 0 or cc_r < cc_i_under %}{% set cc_i_under = cc_r %}{% endif %}
+                    {% if cc_kw in cc_k_thong %}{% set cc_i_thong = true %}{% endif %}
+                {% else if cc_kw in cc_k_cstring %}
+                    {% if cc_i_cstring < 0 or cc_r < cc_i_cstring %}{% set cc_i_cstring = cc_r %}{% endif %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {# Merge into the worn layers: the less revealing garment keeps a shared layer #}
+        {% if cc_i_chestc >= 0 and (cc_chestc_r < 0 or cc_i_chestc < cc_chestc_r) %}{% set cc_chestc = cc_name %}{% set cc_chestc_r = cc_i_chestc %}{% set cc_chestc_q = cc_q %}{% endif %}
+        {% if cc_i_top >= 0 and (cc_top_r < 0 or cc_i_top < cc_top_r) %}{% set cc_top = cc_name %}{% set cc_top_r = cc_i_top %}{% set cc_top_q = cc_q %}{% endif %}
+        {% if cc_i_bra >= 0 and (cc_bra_r < 0 or cc_i_bra < cc_bra_r) %}{% set cc_bra = cc_name %}{% set cc_bra_r = cc_i_bra %}{% set cc_bra_q = cc_q %}{% endif %}
+        {% if cc_i_bottom >= 0 and (cc_bottom_r < 0 or cc_i_bottom < cc_bottom_r) %}{% set cc_bottom = cc_name %}{% set cc_bottom_r = cc_i_bottom %}{% set cc_bottom_q = cc_q %}{% endif %}
+        {% if cc_i_hotpants >= 0 and (cc_hotpants_r < 0 or cc_i_hotpants < cc_hotpants_r) %}{% set cc_hotpants = cc_name %}{% set cc_hotpants_r = cc_i_hotpants %}{% set cc_hotpants_q = cc_q %}{% endif %}
+        {% if cc_i_skirt >= 0 and (cc_skirt_r < 0 or cc_i_skirt < cc_skirt_r) %}{% set cc_skirt = cc_name %}{% set cc_skirt_r = cc_i_skirt %}{% set cc_skirt_q = cc_q %}{% endif %}
+        {% if cc_i_pelvicc >= 0 and (cc_pelvicc_r < 0 or cc_i_pelvicc < cc_pelvicc_r) %}{% set cc_pelvicc = cc_name %}{% set cc_pelvicc_r = cc_i_pelvicc %}{% set cc_pelvicc_q = cc_q %}{% endif %}
+        {% if cc_i_assc >= 0 and (cc_assc_r < 0 or cc_i_assc < cc_assc_r) %}{% set cc_assc = cc_name %}{% set cc_assc_r = cc_i_assc %}{% set cc_assc_q = cc_q %}{% endif %}
+        {% if cc_i_under >= 0 and (cc_under_r < 0 or cc_i_under < cc_under_r) %}{% set cc_under = cc_name %}{% set cc_under_r = cc_i_under %}{% set cc_under_q = cc_q %}{% set cc_under_thong = cc_i_thong %}{% endif %}
+        {% if cc_i_cstring >= 0 and (cc_cstring_r < 0 or cc_i_cstring < cc_cstring_r) %}{% set cc_cstring = cc_name %}{% set cc_cstring_r = cc_i_cstring %}{% set cc_cstring_q = cc_q %}{% endif %}
+
+        {# The item's most revealing layer decides whether it is listed as revealing by design #}
+        {% set cc_item_r = 0 %}
+        {% if cc_i_chestc > cc_item_r %}{% set cc_item_r = cc_i_chestc %}{% endif %}
+        {% if cc_i_top > cc_item_r %}{% set cc_item_r = cc_i_top %}{% endif %}
+        {% if cc_i_bra > cc_item_r %}{% set cc_item_r = cc_i_bra %}{% endif %}
+        {% if cc_i_bottom > cc_item_r %}{% set cc_item_r = cc_i_bottom %}{% endif %}
+        {% if cc_i_hotpants > cc_item_r %}{% set cc_item_r = cc_i_hotpants %}{% endif %}
+        {% if cc_i_skirt > cc_item_r %}{% set cc_item_r = cc_i_skirt %}{% endif %}
+        {% if cc_i_pelvicc > cc_item_r %}{% set cc_item_r = cc_i_pelvicc %}{% endif %}
+        {% if cc_i_assc > cc_item_r %}{% set cc_item_r = cc_i_assc %}{% endif %}
+        {% if cc_i_under > cc_item_r %}{% set cc_item_r = cc_i_under %}{% endif %}
+        {% if cc_i_cstring > cc_item_r %}{% set cc_item_r = cc_i_cstring %}{% endif %}
+        {% if cc_item_r > 0 %}
+            {% set cc_rev_names = append(cc_rev_names, cc_name) %}
+            {% set cc_rev_ranks = append(cc_rev_ranks, cc_item_r) %}
+            {% set cc_rev_qs = append(cc_rev_qs, cc_q) %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{# --- Overall quality: rich only / poor only / mixed / "" (untagged: omitted) --- #}
+{% set cc_quality = "" %}
+{% if cc_rich > 0 and cc_poor > 0 %}
+    {% set cc_quality = "mixed" %}
+{% else if cc_rich > 0 %}
+    {% set cc_quality = "rich" %}
+{% else if cc_poor > 0 %}
+    {% set cc_quality = "poor" %}
+{% endif %}
+
+{# Exposure without a confirmed cause is reported neutrally. #}
+{% set cc_bare_cause = " (currently uncovered)" %}
+
+{# --- Flash clauses, one per flashing worn layer, worded as coverage --- #}
+{% set cc_any_layer = false %}
+{% set cc_cl_layer = [] %}
+{% set cc_cl_text = [] %}
+{% for cc_id in ["chestc", "top", "bra", "pelvicc", "assc", "bottom", "hotpants", "skirt", "under", "cstring"] %}
+    {% if cc_id == "chestc" %}
+        {% set cc_ln = cc_chestc %}{% set cc_lr = cc_chestc_r %}{% set cc_lq = cc_chestc_q %}{% set cc_lf = cc_f_chestc %}
+    {% else if cc_id == "top" %}
+        {% set cc_ln = cc_top %}{% set cc_lr = cc_top_r %}{% set cc_lq = cc_top_q %}{% set cc_lf = cc_f_top %}
+    {% else if cc_id == "bra" %}
+        {% set cc_ln = cc_bra %}{% set cc_lr = cc_bra_r %}{% set cc_lq = cc_bra_q %}{% set cc_lf = cc_f_bra %}
+    {% else if cc_id == "pelvicc" %}
+        {% set cc_ln = cc_pelvicc %}{% set cc_lr = cc_pelvicc_r %}{% set cc_lq = cc_pelvicc_q %}{% set cc_lf = cc_f_pelvicc %}
+    {% else if cc_id == "assc" %}
+        {% set cc_ln = cc_assc %}{% set cc_lr = cc_assc_r %}{% set cc_lq = cc_assc_q %}{% set cc_lf = cc_f_assc %}
+    {% else if cc_id == "bottom" %}
+        {% set cc_ln = cc_bottom %}{% set cc_lr = cc_bottom_r %}{% set cc_lq = cc_bottom_q %}{% set cc_lf = cc_f_bottom %}
+    {% else if cc_id == "hotpants" %}
+        {% set cc_ln = cc_hotpants %}{% set cc_lr = cc_hotpants_r %}{% set cc_lq = cc_hotpants_q %}{% set cc_lf = cc_f_hotpants %}
+    {% else if cc_id == "skirt" %}
+        {% set cc_ln = cc_skirt %}{% set cc_lr = cc_skirt_r %}{% set cc_lq = cc_skirt_q %}{% set cc_lf = cc_f_skirt %}
+    {% else if cc_id == "under" %}
+        {% set cc_ln = cc_under %}{% set cc_lr = cc_under_r %}{% set cc_lq = cc_under_q %}{% set cc_lf = cc_f_under %}
+    {% else %}
+        {% set cc_ln = cc_cstring %}{% set cc_lr = cc_cstring_r %}{% set cc_lq = cc_cstring_q %}{% set cc_lf = cc_f_cstring %}
+    {% endif %}
+    {% if cc_ln != "" %}
+        {% set cc_any_layer = true %}
+    {% endif %}
+    {% if cc_ln != "" and cc_lf %}
+        {% if cc_lr == 4 %}
+            {% set cc_text = "the {} provides no coverage" %}
+        {% else if cc_lr > 0 %}
+            {% if cc_lq == "rich" %}
+                {% set cc_text = "the sheer {}" %}
+            {% else if cc_lq == "poor" %}
+                {% set cc_text = "the sheer {}" %}
+            {% else %}
+                {% set cc_text = "the sheer {}" %}
+            {% endif %}
+            {% if cc_lr == 1 %}
+                {% set cc_text = cc_text + " is faintly transparent" %}
+            {% else if cc_lr == 3 %}
+                {% set cc_text = cc_text + " is highly transparent" %}
+            {% else %}
+                {% set cc_text = cc_text + " is transparent" %}
+            {% endif %}
+        {% else if cc_id == "cstring" %}
+            {% set cc_text = "the {} provides minimal coverage" %}
+        {% else if cc_lq == "rich" %}
+            {% set cc_text = "the {} does not currently cover this area" %}
+        {% else if cc_lq == "poor" %}
+            {% set cc_text = "the {} does not currently cover this area" %}
+        {% else %}
+            {% set cc_text = "the {} does not currently cover this area" %}
+        {% endif %}
+        {% set cc_cl_layer = append(cc_cl_layer, cc_id) %}
+        {% set cc_cl_text = append(cc_cl_text, replace(cc_text, "{}", cc_ln)) %}
+    {% endif %}
+{% endfor %}
+
+{# Which flashing layers can reveal each area (outer layers only, per A.N.D.'s layer chart).
+   A thong-type garment never covers the rear, so its flash is never cited for the rear. #}
+{% set cc_why_chest = [] %}
+{% set cc_why_bra = [] %}
+{% set cc_why_under = [] %}
+{% set cc_why_genitals = [] %}
+{% set cc_why_ass = [] %}
+{# One garment can fill two flashing layers (a dress with pelvic and ass curtains), so each area names a clause once #}
+{% for cc_id in cc_cl_layer %}
+    {% set cc_w = at(cc_cl_text, loop.index) %}
+    {% if cc_id in ["chestc", "top", "bra"] and not (cc_w in cc_why_chest) %}
+        {% set cc_why_chest = append(cc_why_chest, cc_w) %}
+    {% endif %}
+    {% if cc_id in ["chestc", "top"] and not (cc_w in cc_why_bra) %}
+        {% set cc_why_bra = append(cc_why_bra, cc_w) %}
+    {% endif %}
+    {% if cc_id in ["pelvicc", "assc", "bottom", "hotpants", "skirt"] and not (cc_w in cc_why_under) %}
+        {% set cc_why_under = append(cc_why_under, cc_w) %}
+    {% endif %}
+    {% if cc_id in ["pelvicc", "bottom", "hotpants", "under", "cstring"] and not (cc_w in cc_why_genitals) %}
+        {% set cc_why_genitals = append(cc_why_genitals, cc_w) %}
+    {% endif %}
+    {% if (cc_id in ["assc", "bottom", "skirt"] or (cc_id == "under" and not cc_under_thong)) and not (cc_w in cc_why_ass) %}
+        {% set cc_why_ass = append(cc_why_ass, cc_w) %}
+    {% endif %}
+{% endfor %}
+
+{% if cc_under != "" %}
+    {% set cc_under_shown = cc_under %}
+{% else if cc_cstring != "" %}
+    {% set cc_under_shown = cc_cstring %}
+{% else %}
+    {% set cc_under_shown = "smallclothes" %}
+{% endif %}
+
+{# --- Output --- #}
+{% if cc_exposed or length(cc_rev_names) > 0 or cc_quality != "" %}
+### Clothing Coverage
+{% if cc_nude %}
+- Overall: nude.
+{% endif %}
+{% if length(cc_rev_names) > 0 %}
+- Garment transparency and coverage: {% for cc_rn in cc_rev_names %}{{ cc_rn }} ({% if at(cc_rev_ranks, loop.index) == 4 %}provides no coverage{% else if at(cc_rev_ranks, loop.index) == 3 %}nearly see-through{% else if at(cc_rev_ranks, loop.index) == 1 %}faintly sheer{% else %}sheer{% endif %}){% if not loop.is_last %}; {% endif %}{% endfor %}.
+{% endif %}
+{% if not cc_nude or cc_any_layer %}
+{% if cc_topless or cc_show_chest %}
+- Chest: {{ cc_poss }} {{ cc_term_chest }} {% if cc_topless %}bare{% else %}visible{% endif %}{% if length(cc_why_chest) > 0 %} - {{ join(cc_why_chest, "; ") }}{% else %}{{ cc_bare_cause }}{% endif %}.
+{% endif %}
+{% if cc_show_bra %}
+- Upper underclothes: {{ cc_poss }} {% if cc_bra != "" %}{{ cc_bra }} ({{ cc_term_bra }}){% else %}{{ cc_term_bra }}{% endif %} visible{% if length(cc_why_bra) > 0 %} - {{ join(cc_why_bra, "; ") }}{% else %}{{ cc_bare_cause }}{% endif %}.
+{% endif %}
+{% if cc_show_under %}
+- Lower underclothes: {{ cc_poss }} {{ cc_under_shown }} visible{% if length(cc_why_under) > 0 %} - {{ join(cc_why_under, "; ") }}{% else %}{{ cc_bare_cause }}{% endif %}.
+{% endif %}
+{% if cc_bottomless or cc_show_genitals %}
+- Groin: {{ cc_poss }} genitals {% if cc_bottomless %}bare{% else %}visible{% endif %}{% if length(cc_why_genitals) > 0 %} - {{ join(cc_why_genitals, "; ") }}{% else %}{{ cc_bare_cause }}{% endif %}.
+{% endif %}
+{% if cc_bottomless or cc_show_ass %}
+- Rear: {{ cc_poss }} buttocks {% if cc_bottomless %}bare{% else %}visible{% endif %}{% if length(cc_why_ass) > 0 %} - {{ join(cc_why_ass, "; ") }}{% else %}{{ cc_bare_cause }}{% endif %}.
+{% endif %}
+{% endif %}
+{% if cc_quality == "rich" %}
+- Attire: contains garments classified as fine clothing.
+{% else if cc_quality == "poor" %}
+- Attire: contains garments classified as ordinary clothing.
+{% else if cc_quality == "mixed" %}
+- Attire: contains a mix of garments classified as fine and ordinary clothing.
+{% endif %}
+{% endif %}
+{% endif %}

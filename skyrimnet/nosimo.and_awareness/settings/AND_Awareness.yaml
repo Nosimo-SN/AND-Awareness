@@ -1,0 +1,235 @@
+plugin:
+  name: "A.N.D. Awareness"
+  version: "1.0.0"
+  description: >-
+    Nearby NPCs notice when an Advanced Nudity Detection flash happens: a curtain swinging aside or a
+    sheer garment turning see-through. The AND_Awareness SKSE plugin watches A.N.D.'s flashing factions on
+    the player and nearby NPCs and posts one short narration line per allowed flash. How often that
+    happens depends on how much of your clothing is tagged, so tune it here. Changes apply within a few
+    seconds, no restart needed. Only flash starts are announced; A.N.D. handles covering back up.
+  icon: "👗"
+
+schema:
+  fields:
+    # --- General -------------------------------------------------------------------------------------
+    - name: "Enable Flash Reactions"
+      path: "general.enabled"
+      type: "bool"
+      description: "Master switch. Off = no narration is posted (the raw SN_ANDFlash mod event still fires for other mods)."
+      defaultValue: true
+      category: "General"
+
+    - name: "React To Player Flashes"
+      path: "general.player"
+      type: "bool"
+      description: "Announce flashes on your own character."
+      defaultValue: true
+      category: "General"
+
+    - name: "React To NPC Flashes"
+      path: "general.npcs"
+      type: "bool"
+      description: "Announce flashes on NPCs near you."
+      defaultValue: true
+      category: "General"
+
+    - name: "NPCs: Followers Only"
+      path: "general.followers_only"
+      type: "bool"
+      description: "Only announce NPC flashes for your followers (player teammates). Useful when only your own and your followers' outfits are tagged, or when everyone is tagged and you want less noise."
+      defaultValue: false
+      category: "General"
+
+    - name: "NPCs: Max Distance"
+      path: "general.max_distance"
+      type: "int"
+      description: "Ignore NPC flashes farther than this from the player, in game units (about 70 units per metre). 0 = no limit beyond the loaded area."
+      defaultValue: 1500
+      min: 0
+      max: 8192
+      category: "General"
+
+    # --- Frequency -----------------------------------------------------------------------------------
+    - name: "Reaction Chance (%)"
+      path: "frequency.chance"
+      type: "int"
+      description: "Chance that a flash which passes the cooldowns is announced. Lower this if your load order has a lot of tagged clothing."
+      defaultValue: 25
+      min: 0
+      max: 100
+      category: "Frequency"
+
+    - name: "Global Cooldown (seconds)"
+      path: "frequency.global_cooldown"
+      type: "int"
+      description: "After any announcement, no other flash is announced for this long. Keeps a crowd from reacting all at once."
+      defaultValue: 180
+      min: 0
+      max: 3600
+      category: "Frequency"
+
+    - name: "Per-Actor Cooldown (seconds)"
+      path: "frequency.actor_cooldown"
+      type: "int"
+      description: "After a character's flash is announced, that same character's flashes are ignored for this long."
+      defaultValue: 600
+      min: 0
+      max: 3600
+      category: "Frequency"
+
+    - name: "Force A Reaction"
+      path: "frequency.force_reaction"
+      type: "bool"
+      description: "On: posted as direct narration, so a nearby NPC reacts right away. Off: logged as a quiet scene event that NPCs know about and may bring up later."
+      defaultValue: true
+      category: "Frequency"
+
+    # --- Flash types ---------------------------------------------------------------------------------
+    - name: "Chest Curtain"
+      path: "types.chest_curtain"
+      type: "bool"
+      description: "Cloth draped over the chest swinging aside."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Pelvic Curtain (front of skirt)"
+      path: "types.pelvic_curtain"
+      type: "bool"
+      description: "The front of a skirt or loincloth swaying aside."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Ass Curtain (back of skirt)"
+      path: "types.ass_curtain"
+      type: "bool"
+      description: "The back of a skirt or loincloth flipping up."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Sheer Top"
+      path: "types.top"
+      type: "bool"
+      description: "A sheer top turning see-through."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Sheer Bra"
+      path: "types.bra"
+      type: "bool"
+      description: "A sheer breastband / chest wrap turning see-through."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Sheer Bottom"
+      path: "types.bottom"
+      type: "bool"
+      description: "A sheer lower garment turning see-through."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Sheer Underwear"
+      path: "types.underwear"
+      type: "bool"
+      description: "Sheer smallclothes turning see-through."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Sheer Hotpants"
+      path: "types.hotpants"
+      type: "bool"
+      description: "Sheer shorts turning see-through."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "Sheer Showgirl / Himbo Skirt"
+      path: "types.skirt"
+      type: "bool"
+      description: "A sheer rear-only skirt turning see-through."
+      defaultValue: true
+      category: "Flash Types"
+
+    - name: "C-String"
+      path: "types.cstring"
+      type: "bool"
+      description: "A c-string too slight to notice, so the wearer looks bare."
+      defaultValue: true
+      category: "Flash Types"
+
+    # --- Narration text ------------------------------------------------------------------------------
+    - name: "Text: Chest Curtain"
+      path: "text.chest_curtain"
+      type: "string"
+      description: "Placeholders: {name} = character, {their} = his/her, {chest} = chest/breasts, {band} = chest wrap/breastband. Describe only what the garment did; the clothing prompt carries the exposure."
+      defaultValue: "The cloth draped over {name}'s chest swings aside, briefly baring {their} {chest}."
+      category: "Narration Text"
+
+    - name: "Text: Pelvic Curtain"
+      path: "text.pelvic_curtain"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "The front of {name}'s skirt sways aside, briefly exposing what lies beneath it."
+      category: "Narration Text"
+
+    - name: "Text: Ass Curtain"
+      path: "text.ass_curtain"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "The back of {name}'s skirt flips up, briefly exposing what lies beneath it."
+      category: "Narration Text"
+
+    - name: "Text: Sheer Top"
+      path: "text.top"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "Light catches {name}'s sheer top, and for a moment it hides little of what lies beneath."
+      category: "Narration Text"
+
+    - name: "Text: Sheer Bra"
+      path: "text.bra"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "For a moment, {name}'s sheer {band} turns see-through in the light."
+      category: "Narration Text"
+
+    - name: "Text: Sheer Bottom"
+      path: "text.bottom"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "Light passes through {name}'s sheer lower garment, briefly revealing what lies beneath."
+      category: "Narration Text"
+
+    - name: "Text: Sheer Underwear"
+      path: "text.underwear"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "For a moment, {name}'s sheer smallclothes hide little."
+      category: "Narration Text"
+
+    - name: "Text: Sheer Hotpants"
+      path: "text.hotpants"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "For a moment, {name}'s sheer shorts turn see-through in the light."
+      category: "Narration Text"
+
+    - name: "Text: Sheer Showgirl / Himbo Skirt"
+      path: "text.skirt"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "For a moment, the sheer skirt over {name}'s rear turns see-through in the light."
+      category: "Narration Text"
+
+    - name: "Text: C-String"
+      path: "text.cstring"
+      type: "string"
+      description: "Placeholders: {name}, {their}, {chest}, {band}."
+      defaultValue: "For a moment, the tiny strip {name} wears is too slight to notice, and {their} groin looks bare."
+      category: "Narration Text"
+
+    # --- Debug ---------------------------------------------------------------------------------------
+    - name: "Log Every Flash"
+      path: "debug.log_all"
+      type: "bool"
+      description: "Write every flash start/end to AND_Awareness.log (in the SKSE log folder), not just the announced ones."
+      defaultValue: false
+      category: "Debug"

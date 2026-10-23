@@ -1,0 +1,12 @@
+# build output and logs
+build/
+build-log*.txt
+
+# SkyrimNet API headers: copy from the SkyrimNet devkit (CppAPI/), not redistributed
+include/SkyrimNet/
+
+# editor / OS clutter
+.vs/
+.vscode/
+*.user
+Thumbs.db
