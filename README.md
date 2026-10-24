@@ -83,6 +83,21 @@ In SkyrimNet: **Settings > Plugins > AND_Awareness**. Changes apply within about
 | Narration Text | | One editable line per flash type; placeholders `{name}`, `{their}`, `{chest}`, `{band}` |
 | Log Every Flash | off | Writes every flash to `AND_Awareness.log` in the SKSE log folder |
 
+### Restoring the defaults
+
+SkyrimNet's settings pages have no "restore defaults" button yet, so a reset is done by hand. Your choices
+are saved in a separate file, never inside the mod:
+
+```
+Data/SKSE/Plugins/SkyrimNet/config/plugins/AND_Awareness/settings.yaml
+```
+
+With the game closed, delete that file; the next time SkyrimNet loads, every setting is back to the defaults
+in the table above. Under Mod Organizer 2 the file is not in the real `Data` folder but in whichever mod or
+output folder receives SkyrimNet's config (often `overwrite`, or a dedicated SKSE output mod); search your
+mods folder for `AND_Awareness/settings.yaml` if you are unsure. Deleting it only resets this mod's settings,
+nothing else in SkyrimNet.
+
 ## Building from source
 
 Needs Visual Studio 2022 Build Tools (MSVC, C++23), CMake 3.21+, Ninja (included with the Build Tools),
