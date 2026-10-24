@@ -206,6 +206,24 @@ namespace
 		return text;
 	}
 
+	// Children are never tracked, announced or reported, whatever their clothing is tagged with.
+	// The race child flag covers vanilla and most custom child races; the race EditorID check catches
+	// custom child races that forgot the flag (EditorIDs are available because A.N.D. requires po3 Tweaks).
+	bool IsChildActor(RE::Actor* a_actor)
+	{
+		if (a_actor->IsChild()) {
+			return true;
+		}
+		const auto race = a_actor->GetRace();
+		const auto raceID = race ? race->GetFormEditorID() : nullptr;
+		if (!raceID) {
+			return false;
+		}
+		std::string editorID = raceID;
+		std::ranges::transform(editorID, editorID.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		return editorID.find("child") != std::string::npos;
+	}
+
 	// Gate order: master switch, which actors, flash type, cooldowns, then the chance roll.
 	void MaybeAnnounce(RE::Actor* a_actor, bool a_isPlayer, std::size_t a_index, const Settings& a_settings, RE::PlayerCharacter* a_player)
 	{
@@ -216,9 +234,6 @@ namespace
 			return;
 		}
 		if (!a_isPlayer) {
-			if (a_actor->IsChild()) {
-				return;
-			}
 			if (a_settings.followersOnly && !a_actor->IsPlayerTeammate()) {
 				return;
 			}
@@ -262,7 +277,8 @@ namespace
 	void ScanActor(RE::Actor* a_actor, bool a_isPlayer, const Settings& a_settings, RE::PlayerCharacter* a_player,
 		std::unordered_map<RE::FormID, std::uint16_t>& a_seen)
 	{
-		if (!a_actor || a_actor->IsDead()) {
+		// Excluded actors never enter a_seen, so they get no mod event and no narration.
+		if (!a_actor || a_actor->IsDead() || IsChildActor(a_actor)) {
 			return;
 		}
 		const auto id = a_actor->GetFormID();
@@ -420,7 +436,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 {
 	InitializeLog();
 	SKSE::Init(a_skse, false);
-	logs::info("A.N.D. Awareness 1.0.0 loaded");
+	logs::info("A.N.D. Awareness 1.0.1 loaded");
 
 	if (!SKSE::GetMessagingInterface()->RegisterListener(OnMessage)) {
 		logs::critical("Could not register the SKSE message listener");

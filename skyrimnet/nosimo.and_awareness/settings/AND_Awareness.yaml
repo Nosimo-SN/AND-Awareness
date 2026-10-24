@@ -1,6 +1,6 @@
 plugin:
   name: "A.N.D. Awareness"
-  version: "1.0.0"
+  version: "1.0.1"
   description: >-
     Nearby NPCs notice when an Advanced Nudity Detection flash happens: a curtain swinging aside or a
     sheer garment turning see-through. The AND_Awareness SKSE plugin watches A.N.D.'s flashing factions on

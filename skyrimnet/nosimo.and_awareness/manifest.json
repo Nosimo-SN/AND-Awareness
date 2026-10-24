@@ -2,11 +2,11 @@
   "type": "bundle",
   "id": "nosimo.and_awareness",
   "author": "nosimo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "min_skyrimnet_version": "0.25.0",
   "title": "A.N.D. Awareness",
   "tagline": "Nearby NPCs notice Advanced Nudity Detection flashes on the player and NPCs",
-  "description": "A new character bio section is added from 0413_clothingcoverage.prompt which adds coverage or lack of coverage of AND keyworded items as well as exposure through flashing state under the equpment list.  The AND_Awareness SKSE plugin watches A.N.D.'s flashing factions on the player and nearby NPCs and posts one short narration per allowed flash (curtains slipping, sheer garments turning see-through). Chance, cooldowns, which actors, which flash types and the narration text are all on this plugin's Settings page. Narration only states what the garment did; the clothing coverage prompt carries the resulting exposure. Also raises the SKSE mod event SN_ANDFlash (strArg = flash type, numArg = 1 start / 0 end, sender = actor) for other mods.",
+  "description": "Injects a Clothing Coverage section, from 0413_clothingcoverage.prompt, into the character information SkyrimNet sends to the AI, right after the worn-equipment list: coverage or lack of coverage of A.N.D.-keyworded items and exposure through flashing states. It is not shown on the character bio page; it can be seen in the prompt payloads in SkyrimNet's logs. Children are never described or announced. The AND_Awareness SKSE plugin watches A.N.D.'s flashing factions on the player and nearby NPCs and posts one short narration per allowed flash (curtains slipping, sheer garments turning see-through). Chance, cooldowns, which actors, which flash types and the narration text are all on this plugin's Settings page. Narration only states what the garment did; the clothing coverage prompt carries the resulting exposure. Also raises the SKSE mod event SN_ANDFlash (strArg = flash type, numArg = 1 start / 0 end, sender = actor) for other mods.",
   "tags": ["clothing", "npc", "settings"],
   "nsfw": true,
   "mods": [

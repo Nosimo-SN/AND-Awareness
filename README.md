@@ -39,6 +39,11 @@ SKSE/Plugins/SkyrimNet/external/nosimo.and_awareness/
 
 ## How it works
 
+**Children are always excluded.** Whatever their clothing is tagged with, child characters get no Clothing
+Coverage section, are never tracked for flashes, and never produce a narration or an `SN_ANDFlash` event.
+The SKSE plugin checks the race's child flag and, for custom child races that omit it, a "child" race
+EditorID; the prompt uses SkyrimNet's `isChild`.
+
 ### Clothing Coverage prompt
 
 - **Exposure comes only from A.N.D.** Every "visible" or "bare" line is A.N.D.'s own verdict (its exposure

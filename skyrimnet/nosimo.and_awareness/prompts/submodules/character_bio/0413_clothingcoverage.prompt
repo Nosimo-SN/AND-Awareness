@@ -10,10 +10,13 @@
      AND_Underwear + AND_Underwear_NoCover still covers). Layers are settled after all of an item's
      keywords are read, so keyword and item order never matter.
    - ClothingRich / ClothingPoor tally supplies a neutral classification: rich only, poor only, mixed, or omitted when untagged.
+   - Children (decnpc().isChild) are skipped entirely: the section renders nothing for them.
    Faction ranks: 0 inactive, 1 active. Modesty is out of scope here.
    Inja notes: no list literals from variables, no index assignment; parallel lists + at() instead.
 #}
 {% set cc_actor = decnpc(actorUUID) %}
+{# Children are never described, whatever their clothing is tagged with. #}
+{% if not cc_actor.isChild %}
 {% set cc_poss = cc_actor.possessiveAdjective %}
 {% set cc_is_male = cc_actor.gender == "Male" %}
 {% if cc_is_male %}
@@ -339,6 +342,7 @@
 - Attire: contains garments classified as ordinary clothing.
 {% else if cc_quality == "mixed" %}
 - Attire: contains a mix of garments classified as fine and ordinary clothing.
+{% endif %}
 {% endif %}
 {% endif %}
 {% endif %}
