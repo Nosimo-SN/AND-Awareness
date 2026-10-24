@@ -9,7 +9,7 @@ It has two parts that work together:
 
 | Part | What it does |
 |---|---|
-| **Clothing Coverage prompt** (`0413_clothingcoverage.prompt`) | Adds a *Clothing Coverage* section to every character bio, under the equipment list: revealing garments, what is visible right now, which garment is responsible, and an overall clothing-quality note. |
+| **Clothing Coverage prompt** (`0413_clothingcoverage.prompt`) | Injects a *Clothing Coverage* section into the character information SkyrimNet sends to the AI, right after the worn-equipment list: revealing garments, what is visible right now, which garment is responsible, and an overall clothing-quality note. It is not shown on the dashboard's character bio page; to see it, look at the prompt payloads in SkyrimNet's logs. |
 | **AND_Awareness SKSE plugin** (`AND_Awareness.dll`) | Watches A.N.D.'s flash states on the player and nearby NPCs and posts a short narration line when a flash starts, so nearby characters can react. Fully adjustable from SkyrimNet's settings page. No Papyrus scripts. |
 
 > **Adult content.** This mod describes nudity and exposure states reported by A.N.D. It is intended for
