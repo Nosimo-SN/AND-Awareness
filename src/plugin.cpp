@@ -208,14 +208,19 @@ namespace
 
 	// Children are never tracked, announced or reported, whatever their clothing is tagged with.
 	// The race child flag covers vanilla and most custom child races; the race EditorID check catches
-	// custom child races that forgot the flag (EditorIDs are available because A.N.D. requires po3 Tweaks).
+	// custom child races that forgot the flag. Both are read straight from TESRace (one layout on SE, AE
+	// and VR) instead of the IsChild / GetFormEditorID virtuals, whose vtable slots CommonLib does not
+	// relocate for VR. This is the same test Character::IsChild performs.
 	bool IsChildActor(RE::Actor* a_actor)
 	{
-		if (a_actor->IsChild()) {
+		const auto race = a_actor->GetRace();
+		if (!race) {
+			return false;
+		}
+		if (race->data.flags.any(RE::RACE_DATA::Flag::kChild)) {
 			return true;
 		}
-		const auto race = a_actor->GetRace();
-		const auto raceID = race ? race->GetFormEditorID() : nullptr;
+		const auto raceID = race->formEditorID.c_str();
 		if (!raceID) {
 			return false;
 		}
@@ -436,7 +441,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 {
 	InitializeLog();
 	SKSE::Init(a_skse, false);
-	logs::info("A.N.D. Awareness 1.0.1 loaded");
+	logs::info("A.N.D. Awareness 1.0.2 loaded on Skyrim {} {}", REL::Module::IsVR() ? "VR" : (REL::Module::IsAE() ? "AE" : "SE"), a_skse->RuntimeVersion().string("."));
 
 	if (!SKSE::GetMessagingInterface()->RegisterListener(OnMessage)) {
 		logs::critical("Could not register the SKSE message listener");

@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 cmake_minimum_required(VERSION 3.21)
-project(AND_Awareness VERSION 1.0.1 LANGUAGES CXX)
+project(AND_Awareness VERSION 1.0.2 LANGUAGES CXX)
 
-# SE + AE (flatrim) only; no hooks, so the trampoline patch-safety fetch is unnecessary.
+# SE + AE + VR in one DLL (CommonLib "all" build); no hooks, so the trampoline patch-safety fetch is unnecessary.
 set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ENABLE_SKYRIM_VR OFF CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_SE ON CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_AE ON CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_VR ON CACHE BOOL "" FORCE)
 set(SKSE_SUPPORT_PATCH_SAFETY OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(lib/commonlibsse-ng commonlib)

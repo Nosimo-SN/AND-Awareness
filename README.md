@@ -17,8 +17,10 @@ It has two parts that work together:
 
 ## Requirements
 
-- Skyrim SE / AE (1.5.97 and 1.6.x) with [SKSE](https://skse.silverlock.org/)
-- [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
+- Skyrim SE / AE (1.5.97 and 1.6.x) with [SKSE](https://skse.silverlock.org/), **or** Skyrim VR with SKSEVR.
+  One DLL covers all three.
+- Address Library: [Address Library for SKSE Plugins](https://www.nexusmods.com/skyrimspecialedition/mods/32444)
+  on SE/AE, or [VR Address Library for SKSEVR](https://www.nexusmods.com/skyrimspecialedition/mods/58101) on VR
 - Advanced Nudity Detection 4.x
 - SkyrimNet Beta 25 or later (for the plugin settings page)
 - **Keyword Item Distributor (KID) files that tag your clothing with A.N.D. keywords.** The mod only knows
@@ -143,6 +145,9 @@ The first build compiles CommonLibSSE-NG (about 15 minutes); later builds take s
   a mod re-dresses them.
 - **NPC detection covers characters loaded near the player** (the engine's high-process actor list).
 - Tested on Skyrim 1.6.1170. Skyrim 1.7.x should work through Address Library but is not yet verified.
+- Skyrim VR support was added in 1.0.2 and is awaiting confirmation from VR players. On VR, logs are in
+  `Documents\My Games\Skyrim VR\SKSE\` (`sksevr.log`, `AND_Awareness.log`). The first line of
+  `AND_Awareness.log` names the runtime the plugin detected.
 
 ## License
 
