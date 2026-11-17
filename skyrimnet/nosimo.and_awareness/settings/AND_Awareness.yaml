@@ -1,6 +1,6 @@
 plugin:
   name: "A.N.D. Awareness"
-  version: "1.0.2"
+  version: "1.1.0"
   description: >-
     Nearby NPCs notice when an Advanced Nudity Detection flash happens: a curtain swinging aside or a
     sheer garment turning see-through. The AND_Awareness SKSE plugin watches A.N.D.'s flashing factions on
@@ -225,6 +225,14 @@ schema:
       description: "Placeholders: {name}, {their}, {chest}, {band}."
       defaultValue: "For a moment, the tiny strip {name} wears is too slight to notice, and {their} groin looks bare."
       category: "Narration Text"
+
+    # --- Clothing descriptions ------------------------------------------------------------------------
+    - name: "Skip Garments With Vision Descriptions"
+      path: "describe.skip_vision"
+      type: "bool"
+      description: "On: garments SkyrimNet already describes from vision (OmniSight) get no ORF / SLA keyword line in Clothing Coverage. Off: every keyword-tagged garment gets one."
+      defaultValue: true
+      category: "Clothing Descriptions"
 
     # --- Debug ---------------------------------------------------------------------------------------
     - name: "Log Every Flash"

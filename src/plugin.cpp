@@ -6,6 +6,8 @@
 //    sender = the actor) for any mod or trigger that wants it.
 //  - Flash starts that pass the user's settings (SkyrimNet Settings > Plugins > AND_Awareness) are posted to
 //    SkyrimNet as one narration line through its C++ API, with the actor as originator.
+//  - Registers the prompt decorator "and_awareness_skip_vision" (describe.skip_vision as "1" / "0"),
+//    because prompts cannot read plugin settings.
 // No Papyrus. A worker thread paces the poll, posts one scan task at a time to the game thread, reloads the
 // settings and makes the SkyrimNet calls, so the game thread never waits on SkyrimNet.
 
@@ -18,6 +20,7 @@ namespace
 	constexpr auto kANDPlugin = "Advanced Nudity Detection.esp"sv;
 	constexpr auto kConfigName = "AND_Awareness";
 	constexpr auto kEventName = "SN_ANDFlash";
+	constexpr auto kSkipVisionDecorator = "and_awareness_skip_vision";
 	constexpr auto kPollInterval = 2s;
 	constexpr int  kReloadEveryPolls = 5;  // settings reload every ~10 s
 
@@ -58,6 +61,7 @@ namespace
 		std::array<bool, kTypeCount>         types{};
 		std::array<std::string, kTypeCount>  texts{};
 		bool                                 logAll{ false };
+		bool                                 skipVision{ true };
 
 		Settings()
 		{
@@ -161,6 +165,7 @@ namespace
 				}
 			}
 			s.logAll = ConfigBool("debug.log_all", s.logAll);
+			s.skipVision = ConfigBool("describe.skip_vision", s.skipVision);
 		}
 		std::scoped_lock lock(g_settingsLock);
 		g_settings = std::move(s);
@@ -408,6 +413,22 @@ namespace
 			PublicGetPluginConfigValue ? "available" : "MISSING (using defaults)");
 	}
 
+	// The callback runs on SkyrimNet's prompt-render threads; the actor is unused.
+	void RegisterDecorators()
+	{
+		if (!PublicRegisterDecorator) {
+			logs::warn("SkyrimNet decorator registration missing (needs API v5+): the Clothing Coverage prompt will fail to render");
+			return;
+		}
+		const bool registered = PublicRegisterDecorator(kSkipVisionDecorator,
+			"A.N.D. Awareness: \"1\" when keyword garment lines skip garments that have an OmniSight description, else \"0\"",
+			[](RE::Actor*) -> std::string {
+				std::scoped_lock lock(g_settingsLock);
+				return g_settings.skipVision ? "1" : "0";
+			});
+		logs::info("Decorator {} {}", kSkipVisionDecorator, registered ? "registered" : "NOT registered");
+	}
+
 	void OnMessage(SKSE::MessagingInterface::Message* a_msg)
 	{
 		switch (a_msg->type) {
@@ -415,6 +436,7 @@ namespace
 			ResolveFactions();
 			ConnectSkyrimNet();
 			ReloadSettings();
+			RegisterDecorators();
 			if (g_dataReady) {
 				std::thread(WorkerLoop).detach();
 			}
@@ -441,7 +463,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 {
 	InitializeLog();
 	SKSE::Init(a_skse, false);
-	logs::info("A.N.D. Awareness 1.0.2 loaded on Skyrim {} {}", REL::Module::IsVR() ? "VR" : (REL::Module::IsAE() ? "AE" : "SE"), a_skse->RuntimeVersion().string("."));
+	logs::info("A.N.D. Awareness 1.1.0 loaded on Skyrim {} {}", REL::Module::IsVR() ? "VR" : (REL::Module::IsAE() ? "AE" : "SE"), a_skse->RuntimeVersion().string("."));
 
 	if (!SKSE::GetMessagingInterface()->RegisterListener(OnMessage)) {
 		logs::critical("Could not register the SKSE message listener");
