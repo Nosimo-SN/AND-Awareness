@@ -4,7 +4,8 @@
 
 `0413_clothingcoverage.prompt` also reads Outfit Recognition Framework (`ORF_*`) and SexLab Aroused (`SLA_*`)
 keywords on worn items and writes one descriptive line per tagged garment. Both mods stay optional: the
-prompt matches EditorIDs only, so missing keywords render nothing. Prompt-only change, no DLL change.
+prompt matches EditorIDs only, so missing keywords render nothing. The DLL only adds one settings
+decorator (see Vision descriptions).
 
 ## Rules (unchanged)
 
@@ -35,24 +36,37 @@ One line per worn garment that has at least one descriptor, under a `- Garments:
 - Garments:
   - Thieves Guild Armor Remodeled: brown leather armor, low-cut, with a miniskirt.
   - Thieves Guild Boots: high-heeled boots.
-  - Blackguard's Boots: boots on towering stiletto heels.
+  - Blackguard's Boots: boots on stiletto heels.
 ```
 
 Phrase order: `[colours] [material] [fit] <noun>[, cut][, with <extras>].` No articles (avoids a/an and
 plural handling). Colours joined with "and" ("black and gold"). Colours are always included when tagged.
 
-| Part | Keywords → words |
-|---|---|
-| Colours | ORF colours → "red", ..., ORF_Colourful → "colourful" |
-| Material | ORF_Leather → "leather", SLA_ArmorRubber → "rubber" |
-| Fit | ORF_Tight / SLA_ArmorSpendex → "skin-tight" (once), ORF_Flimsy → "flimsy", ORF_Sturdy → "sturdy" |
-| Armor | vanilla ArmorLight or ArmorHeavy on the item = armored; otherwise clothing |
-| Noun (first hit) | Shape: SLA_ArmorLewdLeotard → "leotard", SLA_ArmorHarness → "harness", SLA_ArmorHalfNakedBikini / SLA_Brabikini → "bikini", ORF_Dress → "dress", ORF_Robes → "robes"; prefixed "armored" when armored ("armored dress"). Else by slot (ArmorCuirass/ClothingBody, ArmorBoots/ClothingFeet, ArmorGauntlets/ClothingHands, ArmorHelmet/ClothingHead), armored / clothing: body "armor" / "clothes", feet "armored boots" / "boots", hands "gauntlets" / "gloves", head "helmet" / "hood or hat" → "headwear"; else "armor piece" / "garment" |
-| Heels (feet only) | SLA_BootsHeels → noun prefixed "high-heeled"; SLA_KillerHeels → "<noun> on towering stiletto heels" (wins over BootsHeels) |
-| Cut | ORF_Cleavage → "low-cut", ORF_Revealing → "revealing", SLA_ArmorHalfNaked → "leaving much of the body bare", ORF_NearlyNaked → "leaving the wearer nearly naked" (wins over HalfNaked) |
-| Extras ("with ...") | ORF_ShortSkirt / SLA_MiniSkirt → "a miniskirt", SLA_MicroSkirt → "a microskirt" (wins), SLA_FullSkirt → "a full skirt", SLA_MicroHotpants → "tiny shorts", ORF_Hooded → "a hood", SLA_ArmorCapeFull / SLA_ArmorCapeMini → "a cape" / "a short cape", SLA_HasSleeves → "sleeves", SLA_HasStockings → "stockings", SLA_HasLeggings → "leggings", SLA_Thong* → "a thong", SLA_PastiesNipple → "nipple pasties" |
+| Part                | Keywords → words                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Colours             | ORF colours → "red", ..., ORF_Colourful → "colourful"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Material            | ORF_Leather → "leather", SLA_ArmorRubber → "rubber"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Fit                 | ORF_Tight / SLA_ArmorSpendex → "skin-tight" (once), ORF_Flimsy → "flimsy", ORF_Sturdy → "sturdy"                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Armor               | vanilla ArmorLight or ArmorHeavy on the item = armored; otherwise clothing                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Noun (first hit)    | Shape: SLA_ArmorLewdLeotard → "leotard", SLA_ArmorHarness → "harness", SLA_ArmorHalfNakedBikini / SLA_Brabikini → "bikini", ORF_Dress → "dress", ORF_Robes → "robes"; prefixed "armored" when armored ("armored dress"). Else by slot (ArmorCuirass/ClothingBody, ArmorBoots/ClothingFeet, ArmorGauntlets/ClothingHands, ArmorHelmet/ClothingHead), armored / clothing: body "armor" / "clothes", feet "armored boots" / "boots", hands "gauntlets" / "gloves", head "helmet" / "hood or hat" → "headwear"; else "armor piece" / "garment" |
+| Heels (feet only)   | SLA_BootsHeels → noun prefixed "high-heeled"; SLA_KillerHeels → "<noun> on stiletto heels" (wins over BootsHeels)                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Cut                 | ORF_Cleavage → "low-cut", ORF_Revealing → "revealing", SLA_ArmorHalfNaked → "leaving much of the body bare", ORF_NearlyNaked → "leaving the wearer nearly naked" (wins over HalfNaked)                                                                                                                                                                                                                                                                                                                                                     |
+| Extras ("with ...") | ORF_ShortSkirt / SLA_MiniSkirt → "a miniskirt", SLA_MicroSkirt → "a microskirt" (wins), SLA_FullSkirt → "a full skirt", SLA_MicroHotpants → "tiny shorts", ORF_Hooded → "a hood", SLA_ArmorCapeFull / SLA_ArmorCapeMini → "a cape" / "a short cape", SLA_HasSleeves → "sleeves", SLA_HasStockings → "stockings", SLA_HasLeggings → "leggings", SLA_Thong* → "a thong", SLA_PastiesNipple → "nipple pasties"                                                                                                                                |
 
 Only colours, material, fit, heels, cut or extras make a line; a bare slot noun alone renders nothing.
+
+Names: the existing lookup, `get_item_name_for_wearer` (OmniSight suggested name, wearer's gender
+variant) falling back to `get_item_name`, as base `0410_equipment.prompt` does.
+
+## Vision descriptions
+
+Base `0410_equipment.prompt` shows the OmniSight description per item. New setting "Skip Garments With
+Vision Descriptions" (`describe.skip_vision`, default on): when on, a garment with
+`has_item_description_for_wearer(item, actor)` gets no garment line. A prompt cannot read plugin settings,
+so the DLL registers a decorator `and_awareness_skip_vision(actor)` via `PublicRegisterDecorator`
+(SkyrimNet API v5) that returns `PublicGetPluginConfigValue("describe.skip_vision", "true")`, read per call
+so changes apply without restart. If the DLL is absent the render fails with "function not found"; the DLL
+ships with the mod.
 
 Sheerness: no word in the garment line. It stays in the existing "Garment transparency and coverage" line:
 an item with A.N.D. layer keywords keeps A.N.D.'s rank and ignores ORF/SLA transparent ("modesty overrules
@@ -81,11 +95,14 @@ SLA_PastiesCrotch (A.N.D. layers cover them, or they add nothing an LLM can use)
    noun, heels, cut, extras list) and outfit impression flags; build the phrase and append to parallel
    `cc_gar_names` / `cc_gar_text` lists. Match case-insensitively (`lower(kw.editorID)`): KID files spell
    `sla_` / `SLA_`. Render `- Garments:` after the transparency line; extend the Attire line.
-3. Header comment: document sources and that ORF/SLA never infer exposure.
-4. README: "How it works" bullet, optional ORF/SLA in Requirements; manifest description.
-5. Version 1.1.0 in `manifest.json`, `AND_Awareness.yaml` (and `plugin.cpp`/CMake if versioned there).
-6. In-game check (no tests for prompts): an ORF-tagged vanilla outfit, an SLA-tagged outfit with heels, an
-   untagged outfit (no new lines), a child (nothing), payload read from SkyrimNet logs.
+   Skip the garment line when the vision setting is on and the item has a vision description.
+3. Setting: field in `AND_Awareness.yaml`; decorator registration in `plugin.cpp` at kDataLoaded.
+4. Header comment: document sources and that ORF/SLA never infer exposure.
+5. README: "How it works" bullet, optional ORF/SLA in Requirements, new setting row; manifest description.
+6. Version 1.1.0 in `manifest.json`, `AND_Awareness.yaml` (and `plugin.cpp`/CMake if versioned there).
+7. In-game check (no tests for prompts): an ORF-tagged vanilla outfit, an SLA-tagged outfit with heels, an
+   untagged outfit (no new lines), a vision-described garment with the setting on and off, a child
+   (nothing), payload read from SkyrimNet logs.
 
 ## Known overlap (accepted)
 
