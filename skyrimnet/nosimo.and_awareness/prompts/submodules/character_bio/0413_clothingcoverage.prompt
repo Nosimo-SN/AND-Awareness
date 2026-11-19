@@ -330,7 +330,7 @@
         {% set cc_g_cut = [] %}
         {% if cc_g_lowcut %}{% set cc_g_cut = append(cc_g_cut, "low-cut") %}{% endif %}
         {% if cc_g_revealing %}{% set cc_g_cut = append(cc_g_cut, "revealing") %}{% endif %}
-        {% if cc_g_bare == 2 %}{% set cc_g_cut = append(cc_g_cut, "leaving the wearer nearly naked") %}{% else if cc_g_bare == 1 %}{% set cc_g_cut = append(cc_g_cut, "leaving much of the body bare") %}{% endif %}
+        {% if cc_g_bare == 2 %}{% set cc_g_cut = append(cc_g_cut, "skimpy, covering barely anything") %}{% else if cc_g_bare == 1 %}{% set cc_g_cut = append(cc_g_cut, "leaving much of the body bare") %}{% endif %}
         {% set cc_g_ext = [] %}
         {% if cc_g_skirt == 3 %}{% set cc_g_ext = append(cc_g_ext, "a microskirt") %}{% else if cc_g_skirt == 2 %}{% set cc_g_ext = append(cc_g_ext, "a miniskirt") %}{% else if cc_g_skirt == 1 %}{% set cc_g_ext = append(cc_g_ext, "a full skirt") %}{% endif %}
         {% if cc_g_shorts %}{% set cc_g_ext = append(cc_g_ext, "tiny shorts") %}{% endif %}
