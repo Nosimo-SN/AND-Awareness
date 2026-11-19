@@ -326,7 +326,7 @@
             {% set cc_item_r = 2 %}
         {% endif %}
 
-        {# Garment line: [colours] [material] [fit] noun[, cut][, with extras]. A bare noun alone renders nothing. #}
+        {# Garment line: [colours] [material] [fit] noun[, cut][, with extras]. A slot noun alone renders nothing. #}
         {% set cc_g_cut = [] %}
         {% if cc_g_lowcut %}{% set cc_g_cut = append(cc_g_cut, "low-cut") %}{% endif %}
         {% if cc_g_revealing %}{% set cc_g_cut = append(cc_g_cut, "revealing") %}{% endif %}
@@ -341,7 +341,7 @@
         {% if cc_g_leggings %}{% set cc_g_ext = append(cc_g_ext, "leggings") %}{% endif %}
         {% if cc_g_thong %}{% set cc_g_ext = append(cc_g_ext, "a thong") %}{% endif %}
         {% if cc_g_pasties %}{% set cc_g_ext = append(cc_g_ext, "nipple pasties") %}{% endif %}
-        {% set cc_g_has = length(cc_g_cols) > 0 or length(cc_g_mats) > 0 or length(cc_g_fits) > 0 or cc_g_heels > 0 or length(cc_g_cut) > 0 or length(cc_g_ext) > 0 %}
+        {% set cc_g_has = cc_g_shape != "" or length(cc_g_cols) > 0 or length(cc_g_mats) > 0 or length(cc_g_fits) > 0 or cc_g_heels > 0 or length(cc_g_cut) > 0 or length(cc_g_ext) > 0 %}
         {% if cc_g_has and cc_skip_vision %}
             {% if has_item_description_for_wearer(item.formID, actorUUID) %}
                 {% set cc_g_has = false %}
