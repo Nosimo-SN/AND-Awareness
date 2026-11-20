@@ -25,6 +25,7 @@ It has two parts that work together:
 - SkyrimNet Beta 25 or later (for the plugin settings page)
 - **Keyword Item Distributor (KID) files that tag your clothing with A.N.D. keywords.** The mod only knows
   what A.N.D. knows: the better your clothing is tagged, the richer the descriptions.
+- Optional: Outfit Recognition Framework and/or SexLab Aroused keywords on your clothing, for garment descriptions.
 
 ## Installation
 
@@ -58,7 +59,15 @@ EditorID; the prompt uses SkyrimNet's `isChild`.
 - **Conflicting tags:** when one garment carries several A.N.D. keywords for the same layer (common when
   several KID files overlap), the least revealing one wins, matching A.N.D.'s "modesty overrules skimpy"
   behaviour (verified in game).
-- **Clothing quality:** vanilla `ClothingRich` / `ClothingPoor` keywords give an overall quality note.
+- **Clothing quality:** vanilla `ClothingRich` / `ClothingPoor` keywords (and ORF's `Classy` / `Scruffy`) give
+  an overall quality note.
+- **Garment descriptions (optional):** [Outfit Recognition Framework](https://www.nexusmods.com/skyrimspecialedition/mods/163502)
+  (`ORF_*`) and SexLab Aroused (`SLA_*`) keywords give one line per tagged garment, e.g.
+  `Thieves Guild Armor: brown leather armor, low-cut, with a miniskirt.` Armor is told apart from clothing by
+  the vanilla `ArmorLight` / `ArmorHeavy` keywords ("armored dress"). Outfit impressions (intimidating, out of
+  place, ...) go on the quality note. These keywords never create exposure. `ORF_Transparent` /
+  `SLA_ArmorTransparent` mark a garment sheer only when it has no A.N.D. keyword. Piercings and toys are not
+  described. Garments SkyrimNet already describes from vision are skipped by default (setting below).
 
 ### AND_Awareness SKSE plugin
 
@@ -88,6 +97,7 @@ In SkyrimNet: **Settings > Plugins > AND_Awareness**. Changes apply within about
 | Force A Reaction | on | On = an NPC reacts right away; off = a quiet scene event NPCs may bring up later |
 | Flash Types | all on | One toggle per flash type |
 | Narration Text | | One editable line per flash type; placeholders `{name}`, `{their}`, `{chest}`, `{band}` |
+| Skip Garments With Vision Descriptions | on | No ORF / SLA garment line for garments SkyrimNet describes from vision |
 | Log Every Flash | off | Writes every flash to `AND_Awareness.log` in the SKSE log folder |
 
 ### Restoring the defaults
